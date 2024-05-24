@@ -65,10 +65,11 @@ pub(crate) async fn price(
     card: Option<String>,
     deck: Option<String>,
     currency: Currency,
+    exact_match: bool,
 ) -> Result<()> {
     let mut db = MageDeck::load().await.context("loading db")?;
     if let Some(name) = card {
-        match db.get_card(&name, currency).await? {
+        match db.get_card(&name, currency, exact_match).await? {
             Some(card) => println!("[*] {card} ({})", card.purchase_site.as_ref().unwrap()),
             None => println!("[*] No entry found for '{name}'"),
         }
@@ -83,7 +84,7 @@ pub(crate) async fn price(
         let mut most_expensive = (String::new(), 0.0);
         for card in loaded_deck.cards.into_iter() {
             let (quantity, name) = card;
-            match db.get_card(&name, currency).await? {
+            match db.get_card(&name, currency, exact_match).await? {
                 Some(entry) => {
                     if let Some(mut price) = entry.price {
                         if price < cheapest.1 {

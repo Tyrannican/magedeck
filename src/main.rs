@@ -21,7 +21,8 @@ async fn main() -> Result<()> {
             card,
             deck,
             currency,
-        } => commands::price(card, deck, currency).await?,
+            exact_match,
+        } => commands::price(card, deck, currency, exact_match).await?,
     }
 
     Ok(())

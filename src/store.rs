@@ -67,6 +67,7 @@ impl MageDeck {
         &mut self,
         name: &str,
         currency: Currency,
+        exact_match: bool,
     ) -> Result<Option<PricedCard>> {
         let purchase_site = match currency {
             Currency::Euro | Currency::EuroFoil => "cardmarket",
@@ -74,14 +75,25 @@ impl MageDeck {
             Currency::Tix => "cardhoarder",
         };
 
-        let record: Vec<StoreValue> = sqlx::query_as::<_, StoreValue>(&format!(
-            "select name, set_tag, set_name, min({}), {} from cards where name like '%{}%'",
-            currency.to_string(),
-            purchase_site,
-            name
-        ))
-        .fetch_all(&self.pool)
-        .await?;
+        let query = if exact_match {
+            format!(
+                "select name, set_tag, set_name, min({}), {} from cards where name like '%{}%'",
+                currency.to_string(),
+                purchase_site,
+                name
+            )
+        } else {
+            format!(
+                "select name, set_tag, set_name, min({}), {} from cards where name = '{}'",
+                currency.to_string(),
+                purchase_site,
+                name
+            )
+        };
+
+        let record: Vec<StoreValue> = sqlx::query_as::<_, StoreValue>(&query)
+            .fetch_all(&self.pool)
+            .await?;
 
         let card = &record[0];
         if is_empty_entry(card) {

@@ -77,7 +77,6 @@ pub(crate) struct Card {
     pub(crate) prices: HashMap<String, Option<String>>,
 }
 
-// TODO: Convert to actual DB type
 #[derive(Debug, Clone, Default, Serialize, Deserialize, FromRow)]
 pub(crate) struct DbCard {
     pub(crate) id: Option<String>,

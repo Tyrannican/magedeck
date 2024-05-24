@@ -75,7 +75,6 @@ fn trim_entry(mut entry: &str) -> String {
         entry = removed_sb;
     }
 
-    println!("Entry: {entry:?}");
     if let Some(removed_commander) = entry.strip_suffix("# !Commander") {
         entry = removed_commander;
     }
