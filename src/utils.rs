@@ -29,8 +29,8 @@ pub(crate) async fn load_deck(deck: impl AsRef<Path>) -> Result<Deck> {
     let cards = content
         .split('\n')
         .into_iter()
-        .filter_map(|mut line| {
-            line = line.trim();
+        .filter_map(|line| {
+            let line = &trim_entry(line);
             if !is_valid_deck_entry(line) || is_basic_land(line) {
                 return None;
             }
@@ -50,7 +50,7 @@ pub(crate) async fn load_deck(deck: impl AsRef<Path>) -> Result<Deck> {
 }
 
 fn is_valid_deck_entry(card: &str) -> bool {
-    if card == "Deck" || card == "Sideboard" || card.len() == 0 {
+    if card == "Deck" || card == "Sideboard" || card.len() == 0 || card.starts_with("//") {
         return false;
     }
 
@@ -67,4 +67,19 @@ fn is_basic_land(card: &str) -> bool {
     }
 
     false
+}
+
+fn trim_entry(mut entry: &str) -> String {
+    entry = entry.trim();
+    if let Some(removed_sb) = entry.strip_prefix("SB: ") {
+        entry = removed_sb;
+    }
+
+    println!("Entry: {entry:?}");
+    if let Some(removed_commander) = entry.strip_suffix("# !Commander") {
+        entry = removed_commander;
+    }
+
+    entry = entry.trim();
+    entry.to_string()
 }

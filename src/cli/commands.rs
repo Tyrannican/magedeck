@@ -79,11 +79,20 @@ pub(crate) async fn price(
             return Ok(());
         }
         let mut total_price = 0.0;
+        let mut cheapest = (String::new(), f32::MAX);
+        let mut most_expensive = (String::new(), 0.0);
         for card in loaded_deck.cards.into_iter() {
             let (quantity, name) = card;
             match db.get_card(&name, currency).await? {
                 Some(entry) => {
                     if let Some(mut price) = entry.price {
+                        if price < cheapest.1 {
+                            cheapest = (entry.name.as_ref().unwrap().to_string(), price);
+                        }
+
+                        if price > most_expensive.1 {
+                            most_expensive = (entry.name.as_ref().unwrap().to_string(), price);
+                        }
                         price *= quantity as f32;
                         total_price += price;
                         println!(
@@ -101,6 +110,16 @@ pub(crate) async fn price(
         println!(
             "\n[*] Cheapest version of deck '{deck}': {}",
             currency.to_price(Some(total_price))
+        );
+        println!(
+            "[*] Cheapest card: {} {}",
+            cheapest.0,
+            currency.to_price(Some(cheapest.1))
+        );
+        println!(
+            "[*] Most expensive card: {} {}",
+            most_expensive.0,
+            currency.to_price(Some(most_expensive.1))
         );
         println!("[*] {}", currency.to_purchase_location());
     } else {
