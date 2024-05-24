@@ -77,14 +77,14 @@ impl MageDeck {
 
         let query = if exact_match {
             format!(
-                "select name, set_tag, set_name, min({}), {} from cards where name like '%{}%'",
+                "select name, set_tag, set_name, min({}), {} from cards where name = '{}'",
                 currency.to_string(),
                 purchase_site,
                 name
             )
         } else {
             format!(
-                "select name, set_tag, set_name, min({}), {} from cards where name = '{}'",
+                "select name, set_tag, set_name, min({}), {} from cards where name like '%{}%'",
                 currency.to_string(),
                 purchase_site,
                 name

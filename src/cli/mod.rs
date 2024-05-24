@@ -33,7 +33,7 @@ pub(crate) enum Commands {
         currency: Currency,
 
         /// Use exact card name for search
-        #[arg(short, long, default_value_t = true)]
+        #[arg(short, long)]
         exact_match: bool,
     },
 
