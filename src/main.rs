@@ -17,6 +17,7 @@ async fn main() -> Result<()> {
         Commands::Init => commands::init().await?,
         Commands::Sync => commands::sync().await?,
         Commands::Clean => commands::clean().await?,
+        Commands::Get { card } => commands::get(card).await?,
         Commands::Price {
             card,
             deck,

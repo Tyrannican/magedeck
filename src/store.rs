@@ -63,7 +63,7 @@ impl MageDeck {
         Ok(())
     }
 
-    pub(crate) async fn get_card(
+    pub(crate) async fn get_cheapest_card(
         &mut self,
         name: &str,
         currency: Currency,
@@ -101,6 +101,15 @@ impl MageDeck {
         }
         let card = PricedCard::new(card.to_owned(), currency);
         Ok(Some(card))
+    }
+
+    pub(crate) async fn get_cards(&mut self, name: &str) -> Result<Vec<DbCard>> {
+        let query = format!("select * from cards where name like '%{name}%'");
+        let result: Vec<DbCard> = sqlx::query_as::<_, DbCard>(&query)
+            .fetch_all(&self.pool)
+            .await?;
+
+        Ok(result)
     }
 
     async fn setup_db(pool: &SqlitePool) -> Result<()> {

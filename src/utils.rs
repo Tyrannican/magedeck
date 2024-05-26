@@ -21,6 +21,10 @@ pub(crate) fn is_empty_entry(entry: &StoreValue) -> bool {
     return false;
 }
 
+pub(crate) fn sanitise(s: &str) -> String {
+    s.replace("'", "''")
+}
+
 pub(crate) async fn load_deck(deck: impl AsRef<Path>) -> Result<Deck> {
     let content = fs::read_to_string(deck)
         .await
@@ -40,7 +44,7 @@ pub(crate) async fn load_deck(deck: impl AsRef<Path>) -> Result<Deck> {
             };
 
             let quantity = quantity.parse::<i8>().unwrap_or(1);
-            let name = name.replace("'", "''");
+            let name = sanitise(name);
             Some((quantity, name.to_string()))
         })
         .collect::<Vec<DeckEntry>>();

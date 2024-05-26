@@ -5,7 +5,7 @@ use crate::{
     card::Currency,
     loader::download_cards,
     store::MageDeck,
-    utils::{self, get_project_dir},
+    utils::{self, get_project_dir, sanitise},
 };
 
 fn is_initialised() -> Result<bool> {
@@ -67,9 +67,14 @@ pub(crate) async fn price(
     currency: Currency,
     exact_match: bool,
 ) -> Result<()> {
+    if !is_initialised()? {
+        return Ok(());
+    }
+
     let mut db = MageDeck::load().await.context("loading db")?;
     if let Some(name) = card {
-        match db.get_card(&name, currency, exact_match).await? {
+        let name = sanitise(&name);
+        match db.get_cheapest_card(&name, currency, exact_match).await? {
             Some(card) => println!("[*] {card} ({})", card.purchase_site.as_ref().unwrap()),
             None => println!("[*] No entry found for '{name}'"),
         }
@@ -84,7 +89,7 @@ pub(crate) async fn price(
         let mut most_expensive = (String::new(), 0.0);
         for card in loaded_deck.cards.into_iter() {
             let (quantity, name) = card;
-            match db.get_card(&name, currency, exact_match).await? {
+            match db.get_cheapest_card(&name, currency, exact_match).await? {
                 Some(entry) => {
                     if let Some(mut price) = entry.price {
                         if price < cheapest.1 {
@@ -125,6 +130,25 @@ pub(crate) async fn price(
         println!("[*] {}", currency.to_purchase_location());
     } else {
         println!("[*] Need either `--deck` or `--card` argument to be set!");
+    }
+
+    Ok(())
+}
+
+pub(crate) async fn get(card: String) -> Result<()> {
+    if !is_initialised()? {
+        return Ok(());
+    }
+
+    let mut db = MageDeck::load().await?;
+    let card = sanitise(&card);
+    let cards = db.get_cards(&card).await?;
+    if cards.is_empty() {
+        println!("[*] No card matching '{card}'");
+    }
+
+    for card in cards {
+        println!("{card}");
     }
 
     Ok(())

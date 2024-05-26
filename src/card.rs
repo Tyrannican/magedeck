@@ -95,13 +95,55 @@ pub(crate) struct DbCard {
     pub(crate) tcgplayer: Option<String>,
 }
 
+impl std::fmt::Display for DbCard {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        writeln!(f, "[*] {}", self.name.as_ref().unwrap())?;
+        writeln!(
+            f,
+            "[*] {} ({})",
+            self.set_name.as_ref().unwrap(),
+            self.set.as_ref().unwrap()
+        )?;
+
+        writeln!(
+            f,
+            "[*] Euro Price: {}\t{}",
+            Currency::Euro.to_price(self.euro),
+            Currency::EuroFoil.to_price(self.euro_foil)
+        )?;
+
+        writeln!(
+            f,
+            "[*] US Price: {}\t{}\t{}",
+            Currency::Usd.to_price(self.usd),
+            Currency::UsdFoil.to_price(self.usd_foil),
+            Currency::UsdEtched.to_price(self.usd_etched)
+        )?;
+        writeln!(f, "[*] Tix: {}", Currency::Tix.to_price(self.tix))?;
+        writeln!(f, "[*] Purchase from:")?;
+        if let Some(cardmarket) = &self.cardmarket {
+            writeln!(f, "[*] Cardmarket: {cardmarket}")?;
+        }
+
+        if let Some(tcgplayer) = &self.tcgplayer {
+            writeln!(f, "[*] TCGPlayer: {tcgplayer}")?;
+        }
+
+        if let Some(cardhoarder) = &self.cardhoarder {
+            writeln!(f, "[*] Cardhoarder: {cardhoarder}")?;
+        }
+
+        Ok(())
+    }
+}
+
 impl Card {
     pub(crate) fn to_db_entry(self) -> DbCard {
         let mut card = DbCard::default();
 
         card.id = Some(uuid::Uuid::new_v4().to_string());
         card.name = Some(self.name);
-        card.set = Some(self.set);
+        card.set = Some(self.set.to_uppercase());
         card.set_name = Some(self.set_name);
         if let Some(p_links) = self.purchase_links {
             for (key, value) in p_links.into_iter() {
@@ -183,10 +225,10 @@ impl Currency {
 
         match *self {
             Self::Euro => format!("{price}€"),
-            Self::EuroFoil => format!("{price}€ Foil"),
+            Self::EuroFoil => format!("{price}€ (Foil)"),
             Self::Usd => format!("${price}"),
-            Self::UsdFoil => format!("${price} Foil"),
-            Self::UsdEtched => format!("${price} Etched"),
+            Self::UsdFoil => format!("${price} (Foil)"),
+            Self::UsdEtched => format!("${price} (Etched)"),
             Self::Tix => format!("{price} Tix"),
         }
     }

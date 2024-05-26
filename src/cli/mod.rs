@@ -18,6 +18,9 @@ pub(crate) enum Commands {
     /// Synchronise card data with the latest info from Scryfall
     Sync,
 
+    /// Get a card from the database
+    Get { card: String },
+
     /// Gets the cheapest price for a card / deck with the given currency
     Price {
         /// Individual card to price
