@@ -7,7 +7,12 @@ const BULK: &str = "https://api.scryfall.com/bulk-data";
 pub(crate) async fn download_cards() -> Result<Vec<DbCard>> {
     // NOTE: Data is static here from the API so unwraps are safe
     println!("[*] Downloading latest data from Scryfall");
-    let resp = reqwest::get(BULK)
+    let client = reqwest::Client::new();
+    let resp = client
+        .get(BULK)
+        .header("User-Agent", "Magedeck")
+        .header("Accept", "application/json")
+        .send()
         .await
         .context("getting bulk data source")?
         .json::<serde_json::Value>()
